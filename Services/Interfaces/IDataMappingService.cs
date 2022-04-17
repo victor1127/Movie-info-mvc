@@ -8,6 +8,5 @@ namespace MovieProDemo.Services.Interfaces
     {
         Task<Movie> MapMovieDetailAsync(MovieDetail movie);
         ActorDetail MapActorDetail(ActorDetail actor);
-        Task<ActorDetail> GetActorDetailAsync(int id);
     }
 }

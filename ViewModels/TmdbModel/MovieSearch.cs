@@ -9,7 +9,7 @@ namespace MovieProDemo.ViewModels.TmdbModel
     public class MovieSearch
     {
         public int page { get; set; }
-        public MovieSearch[] results { get; set; }
+        public MovieSearchResult[] results { get; set; }
         public int total_pages { get; set; }
         public int total_results { get; set; }
     }

@@ -2,26 +2,50 @@
 using MovieProDemo.Services.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace MovieProDemo.Services
 {
     public class ImageService : IImageService
     {
-        public string ConvertByteArrayToFile(byte[] posterData, string type)
+        private readonly IHttpClientFactory _httpClientFactory;
+        public ImageService(IHttpClientFactory httpClientFactory)
         {
-            throw new NotImplementedException();
+            _httpClientFactory = httpClientFactory;
+        }
+        public string ConvertByteArrayToFile(byte[] posterData, string extension)
+        {
+            if (posterData is null) return string.Empty;
+
+            string imageBase64Data = Convert.ToBase64String(posterData);
+            return $"data:{extension};base64,{imageBase64Data}";
         }
 
-        public Task<byte[]> ConvertFileToByteArray(IFormFile poster)
+        public async Task<byte[]> ConvertFileToByteArray(IFormFile poster)
         {
-            throw new NotImplementedException();
+            using MemoryStream memoryStream = new();
+            await poster.CopyToAsync(memoryStream);
+            return memoryStream.ToArray();
         }
-
-        public Task<byte[]> ConvertImagePathToByteArray(string poster)
+        public async Task<byte[]> ConvertImagePathToByteArray(string posterName)
         {
-            throw new NotImplementedException();
+            var file = $"{Directory.GetCurrentDirectory()}/wwwroot/img/{posterName}";
+            return await File.ReadAllBytesAsync(file);
+        }
+        public async Task<byte[]> EncodeImageUrlAsync(string imageUrl)
+        {
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.GetAsync(imageUrl);
+
+            if (!response.IsSuccessStatusCode) return null;
+
+            using var stream = await response.Content.ReadAsStreamAsync();
+            var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+            return memory.ToArray();
         }
     }
 }

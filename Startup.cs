@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MovieProDemo.Data;
+using MovieProDemo.Services;
+using MovieProDemo.Services.Interfaces;
 using MovieProDemo.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -29,15 +31,31 @@ namespace MovieProDemo
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(
-                    Configuration.GetConnectionString("DefaultConnection")));
+                    options.UseNpgsql(ConnectionService.GetConnectionString(Configuration)));
+            
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                    .AddRoles<IdentityRole>()
+                    .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddRazorPages();
+
             services.AddControllersWithViews();
+
+            services.AddSingleton<IImageService, ImageService>();
+
+            services.AddTransient<SeedService>();
+
+            services.AddHttpClient();
+
+            services.AddScoped<IRemoteMovieService, TmdbMovieService>();
+
+            services.AddScoped<IDataMappingService, TmdbMappingService>();
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
